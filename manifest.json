@@ -1,0 +1,33 @@
+{
+    "manifest_version": 3,
+    "name": "CLFRD",
+    "version": "1.0",
+    "description": "Article summaries using GPT",
+    "permissions": [
+        "tabs",
+        "activeTab",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://api.openai.com/"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "options_page": "options.html",
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["readability.js"]
+        }
+    ],
+    "icons": {
+        "16": "clfrd-logo-16.png",
+        "48": "clfrd-logo-48.png",
+        "128": "clfrd-logo-128.png"
+      }
+}

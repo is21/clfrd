@@ -1,0 +1,54 @@
+body {
+    font-family: 'Georgia', serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f8f8f8;
+    color: #333;
+    line-height: 1.6;
+    min-width: 600px;
+    font-size: 16px; /* Decrease base font size */
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+}
+
+h1, h2, h3 {
+    color: #444;
+}
+
+h1 {
+    font-size: 1.75em; /* Adjust heading sizes */
+    margin-bottom: 0.6em;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 0.4em;
+}
+
+h3 {
+    font-size: 1.25em;
+    margin-bottom: 0.2em;
+}
+
+p {
+    margin-bottom: 1em;
+}
+
+#loadingMessage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#apiKeyInput {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  #openai_api_key, #save {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
