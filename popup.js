@@ -9,22 +9,45 @@ fetch(chrome.runtime.getURL('prompt.txt'))
         console.error('Error:', error);
     });
 
-document.addEventListener('DOMContentLoaded', function () {
-    chrome.storage.sync.get('openai_api_key', function (data) {
-        var openai_api_key = data.openai_api_key;
-
-        if (!openai_api_key) {
-            document.getElementById('apiKeyInput').innerHTML = `
+function showApiInput() {
+    document.getElementById('content').innerHTML = `
+        <div id="apiKeyInput">
         <p>To get started, input your OpenAI API key <br>
         <a id="apiLink" href="https://platform.openai.com/docs/" target="_blank">Learn how to create an API key at platform.openai.com/docs</a></p>
         <input type="text" id="openai_api_key" placeholder="API key">
-        <button id="save">Save</button>`
-            document.getElementById('save').addEventListener('click', function () {
-                var openai_api_key = document.getElementById('openai_api_key').value;
-                chrome.storage.sync.set({ openai_api_key: openai_api_key }, function () {
-                    window.location.reload();
-                });
-            });
+        <button id="save">Save</button>
+        </div>`;
+
+    document.getElementById('save').addEventListener('click', function () {
+        var openai_api_key = document.getElementById('openai_api_key').value;
+        chrome.storage.sync.set({ openai_api_key: openai_api_key }, function () {
+            window.location.reload();
+        });
+    });
+}
+
+function showLoadingMessage(readingTime) {
+    document.getElementById('content').innerHTML = `
+        <div id='loadingMessage'>
+        <div id='generating'>Generating summary<span>.</span><span>.</span><span>.</span></div>
+        <span id='readingTime'>This will save you approximately ${readingTime} minutes of reading time.</span>
+        </div>`;
+}
+
+function showError(errorMessage) {
+    document.getElementById('content').innerHTML = `
+    <div id="error"><b>Error:</b> ${errorMessage}</div>`;
+}
+
+function showSummary(summary) {
+    document.getElementById('content').innerHTML = summary;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    chrome.storage.sync.get('openai_api_key', function (data) {
+        var openai_api_key = data.openai_api_key;
+        if (!openai_api_key) {
+            showApiInput();
             return;
         }
 
@@ -38,12 +61,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         let content = response.result.textContent;
                         let wordCount = content.split(' ').length;
                         let readingTime = Math.ceil(wordCount / 200) - 1;
-                        document.getElementById('loadingMessage').innerHTML = "<div id='generating'>Generating summary<span>.</span><span>.</span><span>.</span></div><span id='readingTime'>This will save you approximately " + readingTime + " minutes of reading time.</span>";
                         let maxContentSize = 128000;
+                        showLoadingMessage(readingTime);
 
                         if (content.length > maxContentSize) {
-                            document.getElementById('loadingMessage').style.display = 'none';
-                            document.getElementById('readability').textContent = "The content is too long to summarize. We'll support longer articles in the future.";
+                            showError(`The page is too long to summarize. We'll support longer articles in the future."`)
                         } else {
                             fetch('https://api.openai.com/v1/chat/completions', {
                                 method: 'POST',
@@ -67,17 +89,16 @@ document.addEventListener('DOMContentLoaded', function () {
                                 .then(data => {
                                     if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
                                         let summary = data.choices[0].message.content.trim();
-                                        document.getElementById('loadingMessage').style.display = 'none';
-                                        document.getElementById('readability').innerHTML = summary;
+                                        showSummary(summary);
                                     } else {
                                         console.log("Unexpected API response:", data);
-                                        document.getElementById('readability').innerHTML = "<b>Error:</b>" + data.error.message ;
-                                        document.getElementById('loadingMessage').style.display = 'none';
+                                        showError(data.error.message)
                                     }
                                 });
                         }
                     } else {
-                        document.getElementById('readability').textContent = "Could not parse the page.";
+                        console.log("Unexpected response from content script:", response);
+                        showError("Error parsing this page")
                     }
                 });
             });
